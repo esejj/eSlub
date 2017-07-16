@@ -1,0 +1,42 @@
+# -------------------------------------------------------------------------
+# eSlub v0.1 converted (temporarily) to eSex (czyli plci na serwerze) |
+# Projekt 'eSlub' zostanie wznowiony 18.07.2017 |
+# creator: esej |
+# -------------------------------------------------------------------------
+
+on first join:
+	if {esej::plec::%player%} isn't set:
+		set {esej::plec::%player%} to "w trakcie"
+		send "&8» &cMusisz ustawic plec" to the player
+		send "&8» &6/plec &8<&3mezczyzna&8/&dkobieta&8>" to the player
+on any move:
+	if {esej::plec::%player%} is "w trakcie":
+		cancel event
+on chat:
+	if {esej::plec::%player%} is "w trakcie":
+		cancel event
+		send "&8» &4Ustaw plec" to the player
+on command:
+	if {esej::plec::%player%} is "w trakcie":
+		if command isn't "plec":
+			cancel event
+			send "&8» &4Ustaw plec"
+			stop
+command /esej:plec [<text>]:
+	description: Skrypt na plec na serwerze.
+	aliases: /plec
+	trigger:
+		if argument 1 is "mezczyzna":
+			if {esej::plec::%player%} is "w trakcie":
+				execute command "pex user %player% add esej.plec.mezczyzna"
+				send "&8» &6Zostajesz &3MEZCZYZNA" to the player
+				stop
+			else if {esej::plec::%player%} is set:
+				send "&8» &6Jesli chcesz zmienic plec... &cTo sie nie da &4:(" to the player
+		if argument 1 is "kobieta":
+			if {esej::plec::%player%} is "w trakcie":
+				execute command "pex user %player% add esej.plec.mezczyzna"
+				send "&8» &6Zostajesz &3MEZCZYZNA" to the player
+				stop
+			else if {esej::plec::%player%} is set:
+				send "&8» &6Jesli chcesz zmienic plec... &cTo sie nie da &4:(" to the player

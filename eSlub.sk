@@ -59,6 +59,8 @@ command /esej:plec [<text>]:
 command /esej:slub [<text>] [<player>] [<player>]:
 	description: Skrypt na slub.
 	aliases: /slub
+	permission: eSlub.ksiadz.command
+	permission message: &8» &cYou don't have permission &8(&ee&6Slub&7.&3ksiadz&7.&3command&8)
 	trigger:
 		if argument 1 isn't "udziel" or "rozwod" or "autor":
 			send "&8» &6e&eSlub &8«" to the player

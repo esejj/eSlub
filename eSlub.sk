@@ -3,57 +3,91 @@
 # creator: esej  |
 # ----------------
 
+on load:
+	if folder "plugins/eSlub" doesn't exists:
+		create folder "plugins/eSlub"
+		create file "plugins/eSlub/config.yml"
+		set {mezczyzni} to 0
+		set {kobiety} to 0
+		create file "plugins/eSlub/mezczyzni.yml"
+		create file "plugins/eSlub/kobiety.yml"
+		wl "prefix-mezczyzna: '&3Mezczyzna'" to "plugins/eSlub/config.yml"
+		wl "prefix-kobieta: '&dKobieta'" to "plugins/eSlub/config.yml"
+	set {prefix-mezczyzna} to colored single value "prefix-mezczyzna" get of "plugins/eSlub/config.yml"
+	set {prefix-kobieta} to colored single value "prefix-kobieta" get of "plugins/eSlub/config.yml"
 on first join:
-	if {esej::plec::%player%} isn't set:
-		set {esej::plec::%player%} to "w trakcie"
+	if {eSlub::plec::%player%} isn't set:
+		set {eSlub::plec::%player%} to "w trakcie"
 		send "&8» &cMusisz ustawic plec" to the player
 		send "&8» &6/plec &8<&3mezczyzna&8/&dkobieta&8>" to the player
 on any move:
-	if {esej::plec::%player%} is "w trakcie":
+	if {eSlub::plec::%player%} is "w trakcie":
 		cancel event
 on chat:
-	if {esej::plec::%player%} is "w trakcie":
+	if {eSlub::plec::%player%} is "w trakcie":
 		cancel event
 		send "&8» &4Ustaw plec" to the player
 on command:
-	if {esej::plec::%player%} is "w trakcie":
+	if {eSlub::plec::%player%} is "w trakcie":
 		if command isn't "plec":
 			cancel event
 			send "&8» &4Ustaw plec"
 			stop
 command /esej:plec [<text>]:
-	description: Skrypt na plec na serwerze.
+	description: plec na serwerze.
 	aliases: /plec
 	trigger:
 		if argument 1 is "mezczyzna":
-			if {esej::plec::%player%} is "w trakcie":
-				execute command "pex user %player% add esej.plec.mezczyzna"
+			if {eSlub::plec::%player%} is "w trakcie":
+				execute command "pex user %player% add plec.mezczyzna"
+				set player's prefix to "%{prefix-mezczyzna}%"
 				send "&8» &6Zostajesz &3MEZCZYZNA" to the player
-				stop
-			else if {esej::plec::%player%} is set:
+				add 1 to {mezczyzni}
+				wl "%{mezczyzni}% . %player%" to "plugins/eSlub/mezczyzni.yml"
+			else if {eSlub::plec::%player%} is set:
 				send "&8» &6Jesli chcesz zmienic plec... &cTo sie nie da &4:(" to the player
 		if argument 1 is "kobieta":
-			if {esej::plec::%player%} is "w trakcie":
-				execute command "pex user %player% add esej.plec.kobieta"
+			if {eSlub::plec::%player%} is "w trakcie":
+				execute command "pex user %player% add plec.kobieta"
+				set player's prefix to "%{prefix-kobieta}%"
 				send "&8» &6Zostajesz &dKOBIETA" to the player
+				add 1 to {kobiety}
+				wl "%{kobiety}% . %player%" to "plugins/eSlub/kobiety.yml"
 				stop
-			else if {esej::plec::%player%} is set:
+			else if {eSlub::plec::%player%} is set:
 				send "&8» &6Jesli chcesz zmienic plec... &cTo sie nie da &4:(" to the player
 command /esej:slub [<text>] [<player>] [<player>]:
 	description: Skrypt na slub.
 	aliases: /slub
 	trigger:
+		if argument 1 isn't "udziel" or "rozwod" or "autor":
+			send "&8» &6e&eSlub &8«" to the player
+			send "&8» &7/slub &6udziel &8<&3maz&8> &8<&dzona&8> &7- &eUdziela slubu" to the player
+			send "&8» &7/slub &6rozwod &8<&3mezczyzna&8> &8<&dkobieta&8> &7- &eUdziela rozwodu" to the player
+			send "&8» &7/slub &3autor &7- &eNazwa autora skryptu" to the player
+			send "&8» &6e&eSlub &8«" to the player
 		if argument 1 is "udziel":
 			player-argument 1 is set:
 				player-argument 2 is set:
-					set {esej::slub::partner::%player-argument 1%} to player-argument 2
-					set {esej::slub::partner::%player-argument 2%} to player-argument 1
+					set {eSlub::slub::partner::%player-argument 1%} to player-argument 2
+					set {eSlub::slub::partner::%player-argument 2%} to player-argument 1
 					broadcast "&8[&6» &6e&eSlub &6«&8] &6Gratulacje! &7Nowa para to &3%player-argument 1% &7oraz &d%player-argument 2%"
 					stop
 				else:
 					send "&8» &cA &dzona &cto gdzie ?!!" to the player
 			else:
 				send "&8» &4Smutny maz &caz uciekl... &6:)" to the player
+		if argument 1 is "rozwod":
+			player-argument 1 is set:
+				player-argument 2 is set:
+					delete {eSlub::slub::partner::%player-argument 1%}
+					delete {eSlub::slub::partner::%player-argument 2%}
+					broadcast "&8[&6» &6e&eSlub &6«&8] &7Rozwod pomiedzy &3%player-argument 1% &7oraz &d%player-argument 2%"
+				else:
+					send "&8» &cPodaj nick drugiej osoby &8(%{prefix-kobieta}%&8)"
+			else:
+				send "&8» &cPodaj nick pierwszej osoby &8(%{prefix-mezczyzna}%&8)"
 		if argument 1 is "autor":
 			send "&9Autor: &3esej" to the player
-				
+			send "&8» &6e&eSlub &7ver: &91.2" to the player
+			stop

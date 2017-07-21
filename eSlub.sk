@@ -1,5 +1,5 @@
 # ----------------
-# eSlub v0.1     |
+# eSlub v1.4     |
 # creator: esej  |
 # ----------------
 
@@ -15,52 +15,71 @@ on load:
 		wl "prefix-kobieta: '&dKobieta'" to "plugins/eSlub/config.yml"
 	set {prefix-mezczyzna} to colored single value "prefix-mezczyzna" get of "plugins/eSlub/config.yml"
 	set {prefix-kobieta} to colored single value "prefix-kobieta" get of "plugins/eSlub/config.yml"
-on first join:
+
+# Funkcje do plci
+on join:
 	if {eSlub::plec::%player%} isn't set:
-		set {eSlub::plec::%player%} to "w trakcie"
 		send "&8» &cMusisz ustawic plec" to the player
 		send "&8» &6/plec &8<&3mezczyzna&8/&dkobieta&8>" to the player
-on any move:
-	if {eSlub::plec::%player%} is "w trakcie":
-		cancel event
 on chat:
-	if {eSlub::plec::%player%} is "w trakcie":
+	if {eSlub::plec::%player%} isn't set:
+		cancel event
+		send "&8» &4Ustaw plec" to the player
+on click:
+	if {eSlub::plec::%player%} isn't set:
 		cancel event
 		send "&8» &4Ustaw plec" to the player
 on command:
-	if {eSlub::plec::%player%} is "w trakcie":
+	if {eSlub::plec::%player%} isn't set:
 		if command isn't "plec":
 			cancel event
 			send "&8» &4Ustaw plec"
 			stop
+
+# Plec ...
 command /esej:plec [<text>]:
 	description: plec na serwerze.
 	aliases: /plec
 	trigger:
-		if argument 1 is "mezczyzna":
-			if {eSlub::plec::%player%} is "w trakcie":
+		if argument isn't "mezczyzna" or "kobieta":
+			send "&8» &6Dozwolone plci: &3mezczyzna &7, &dkobieta" to the player
+			stop
+		if argument is "mezczyzna":
+			if {eSlub::plec::%player%} isn't set:
 				execute command "pex user %player% add plec.mezczyzna"
-				set player's prefix to "%{prefix-mezczyzna}%"
+				execute command "pex user %player% prefix %{prefix-mezczyzna}%"
 				send "&8» &6Zostajesz &3MEZCZYZNA" to the player
 				add 1 to {mezczyzni}
-				wl "%{mezczyzni}% . %player%" to "plugins/eSlub/mezczyzni.yml"
+				wf "%{mezczyzni}% . %player%" to "plugins/eSlub/mezczyzni.yml"
+				set {eSlub::plec::%player%} to "mezczyzna"
 			else if {eSlub::plec::%player%} is set:
 				send "&8» &6Jesli chcesz zmienic plec... &cTo sie nie da &4:(" to the player
-		if argument 1 is "kobieta":
-			if {eSlub::plec::%player%} is "w trakcie":
+		if argument is "kobieta":
+			if {eSlub::plec::%player%} isn't set:
 				execute command "pex user %player% add plec.kobieta"
-				set player's prefix to "%{prefix-kobieta}%"
+				execute command "pex user %player% prefix %{prefix-kobieta}%"
 				send "&8» &6Zostajesz &dKOBIETA" to the player
 				add 1 to {kobiety}
-				wl "%{kobiety}% . %player%" to "plugins/eSlub/kobiety.yml"
+				wf "%{kobiety}% . %player%" to "plugins/eSlub/kobiety.yml"
+				set {eSlub::plec::%player%} to "kobieta"
 				stop
 			else if {eSlub::plec::%player%} is set:
 				send "&8» &6Jesli chcesz zmienic plec... &cTo sie nie da &4:(" to the player
+command /esej:resetuj:
+	description: resetowanie
+	aliases: /resetuj
+	permission: perm.*
+	trigger:
+		clear {eSlub::plec::*}
+		loop all players:
+			execute command "pex user %loop-player% remove plec.mezczyzna"
+			execute command "pex user %loop-player% remove plec.kobieta"
+			execute command "pex user %loop-player% prefix "" "
+
+# eSlub ...
 command /esej:slub [<text>] [<player>] [<player>]:
 	description: Skrypt na slub.
 	aliases: /slub
-	permission: eSlub.ksiadz.command
-	permission message: &8» &cYou don't have permission &8(&ee&6Slub&7.&3ksiadz&7.&3command&8)
 	trigger:
 		if argument 1 isn't "udziel" or "rozwod" or "autor":
 			send "&8» &6e&eSlub &8«" to the player
@@ -68,6 +87,13 @@ command /esej:slub [<text>] [<player>] [<player>]:
 			send "&8» &7/slub &6rozwod &8<&3mezczyzna&8> &8<&dkobieta&8> &7- &eUdziela rozwodu" to the player
 			send "&8» &7/slub &3autor &7- &eNazwa autora skryptu" to the player
 			send "&8» &6e&eSlub &8«" to the player
+		else:
+			if argument 1 isn't set:
+				send "&8» &6e&eSlub &8«" to the player
+				send "&8» &7/slub &6udziel &8<&3maz&8> &8<&dzona&8> &7- &eUdziela slubu" to the player
+				send "&8» &7/slub &6rozwod &8<&3mezczyzna&8> &8<&dkobieta&8> &7- &eUdziela rozwodu" to the player
+				send "&8» &7/slub &3autor &7- &eNazwa autora skryptu" to the player
+				send "&8» &6e&eSlub &8«" to the player
 		if argument 1 is "udziel":
 			player-argument 1 is set:
 				player-argument 2 is set:
@@ -90,10 +116,6 @@ command /esej:slub [<text>] [<player>] [<player>]:
 			else:
 				send "&8» &cPodaj nick pierwszej osoby &8(%{prefix-mezczyzna}%&8)"
 		if argument 1 is "autor":
-			if player doesn't have permission "eSlub.ksiadz.command":
-				send "&9Autor: &3esej" to the player
-				send "&8» &6e&eSlub &7ver: &91.3" to the player
-				stop
-			if player has permission "eSlub.ksiadz.command"
-				send "&8Autor: &3esej" to the player
-				send "&8» *7e&eSlub &7ver: &91.3" to the player
+			send "&8» &6Autor: &3esej" to the player
+			send "&8» &6e&eSlub &7ver: &91.4" to the player
+			stop

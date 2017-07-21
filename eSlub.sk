@@ -90,6 +90,10 @@ command /esej:slub [<text>] [<player>] [<player>]:
 			else:
 				send "&8» &cPodaj nick pierwszej osoby &8(%{prefix-mezczyzna}%&8)"
 		if argument 1 is "autor":
-			send "&9Autor: &3esej" to the player
-			send "&8» &6e&eSlub &7ver: &91.2" to the player
-			stop
+			if player doesn't have permission "eSlub.ksiadz.command":
+				send "&9Autor: &3esej" to the player
+				send "&8» &6e&eSlub &7ver: &91.3" to the player
+				stop
+			if player has permission "eSlub.ksiadz.command"
+				send "&8Autor: &3esej" to the player
+				send "&8» *7e&eSlub &7ver: &91.3" to the player
